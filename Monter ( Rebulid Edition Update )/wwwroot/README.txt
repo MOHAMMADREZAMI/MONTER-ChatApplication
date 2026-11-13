@@ -168,3 +168,22 @@ API and SignalR URLs are now resolved directly against window.location.origin.
 This avoids "Failed to construct URL: Invalid URL" if a stale/cached config.js
 contains a missing or malformed baseUrl. Hard-refresh the browser after replacing
 wwwroot files (Ctrl+F5) so the updated app.js is loaded.
+
+
+UI redesign (messenger look)
+----------------------------
+Presentation-only change. API calls, SignalR hubs, ids and the logic in js/app.js are untouched
+(app.js only had a few text labels edited, plus one small fix so the chat header shows the friend's
+presence immediately when a chat is opened).
+- index.html : new layout (chat list | conversation | profile panel)
+- css/style.css : black / blue / white theme, desktop + phone layouts
+- js/ui.js : NEW, UI-only (compact search mode, tap-friend-in-search, phone back button)
+Hard-refresh (Ctrl+F5) after replacing the files.
+
+Update: removing a member / deleting a group now asks for confirmation with an in-app dialog
+(confirmDialog() in js/app.js) instead of the browser's window.confirm popup.
+Group panel: owner and non-owner views now have the same fixed sizes (the Remove button no longer changes the layout).
+
+Media (js/ui.js + css/style.css): video attachments use a custom in-app player (play/pause, seek, time, speed,
+mute, full screen) instead of the browser's native controls; clicking an image opens an in-app viewer
+(prev/next, zoom, download, Esc / Back to close). Formats the browser cannot decode show a Download button.

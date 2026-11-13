@@ -71,7 +71,7 @@ namespace Monter___Rebulid_Edition_Update__.Hubs
                 Content = content,
                 Sender = Context.User.FindFirst(ClaimTypes.NameIdentifier).Value,
                 Receiver = target,
-                SentAt = DateTime.Now,
+                SentAt = DateTime.UtcNow,
                 File = filePath
             };
 

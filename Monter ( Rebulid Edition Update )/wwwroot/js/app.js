@@ -101,29 +101,12 @@
     const isSignup = mode === "signup";
     signupForm.classList.toggle("hidden", !isSignup);
     loginForm.classList.toggle("hidden", isSignup);
-    $("authTitle").textContent = isSignup ? "Create your account" : "Welcome back";
-    $("authSubtitle").textContent = isSignup ? "Join MONTER and start meaningful conversations." : "Sign in to continue to your conversations.";
-    $("switchText").textContent = isSignup ? "Already have an account?" : "New to MONTER?";
+    $("authTitle").textContent = isSignup ? "Create account" : "Welcome back";
+    $("authSubtitle").textContent = isSignup ? "Sign up to start chatting." : "Sign in to continue.";
+    $("switchText").textContent = isSignup ? "Already have an account?" : "New here?";
     $("switchAuth").textContent = isSignup ? "Sign in" : "Create account";
   }
   $("switchAuth").addEventListener("click", () => switchAuth(signupForm.classList.contains("hidden") ? "signup" : "login"));
-
-  // UI-only navigation: search is an overlay rather than a permanent desktop panel.
-  const searchPanel = $("searchPanel");
-  const openSearch = () => {
-    searchPanel.classList.remove("hidden");
-    requestAnimationFrame(() => $("searchInput").focus());
-  };
-  const closeSearch = () => searchPanel.classList.add("hidden");
-  $("searchToggle")?.addEventListener("click", openSearch);
-  $("mobileSearchButton")?.addEventListener("click", openSearch);
-  $("closeSearch")?.addEventListener("click", closeSearch);
-  $("mobileMenuButton")?.addEventListener("click", () => {
-    if (mainView.classList.contains("chat-open")) $("chatBackButton").click();
-  });
-  $("searchInput")?.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") closeSearch();
-  });
 
   async function readResponse(response) {
     const text = await response.text();
@@ -327,7 +310,6 @@
     renderGroups();
     $("settingsView").classList.add("hidden");
     $("contentGrid").classList.remove("hidden");
-    mainView.classList.remove("settings-open");
     showAuth();
     showToast("You have signed out.");
   }
@@ -454,7 +436,7 @@
     presence.append(dot, document.createTextNode(status));
     const bioTitle = document.createElement("span");
     bioTitle.className = "profile-description-label";
-    bioTitle.textContent = "ABOUT";
+    bioTitle.textContent = "About";
     const bio = document.createElement("p");
     bio.className = "profile-description";
     bio.textContent = description;
@@ -540,35 +522,16 @@
     state.panelMode = null;
   }
   $("closeFriendProfile").addEventListener("click", closeFriendProfile);
-  $("chatDetailsButton")?.addEventListener("click", () => $("chatProfileToggle").click());
-  function toggleChatDetails() {
+  $("chatProfileToggle").addEventListener("click", () => {
     const panel = $("friendProfilePanel");
     if (state.activeGroup) {
-      if (panel.classList.contains("hidden") || state.panelMode !== "group") {
-        openGroupPanel();
-      } else {
-        closeFriendProfile();
-      }
+      if (panel.classList.contains("hidden") || state.panelMode !== "group") openGroupPanel();
+      else closeFriendProfile();
       return;
     }
     if (!state.activeFriend) return;
     if (panel.classList.contains("hidden")) loadFriendProfile(state.activeFriend);
     else closeFriendProfile();
-  }
-
-  // The whole chat header is the hit target on mobile. Keeping the handler
-  // here (instead of relying only on the tiny details icon) makes group
-  // members reachable even on narrow touch screens.
-  $("chatProfileToggle").addEventListener("click", toggleChatDetails);
-  $("chatAvatar").addEventListener("click", event => {
-    event.preventDefault();
-    event.stopPropagation();
-    toggleChatDetails();
-  });
-  $("chatName").addEventListener("click", event => {
-    event.preventDefault();
-    event.stopPropagation();
-    toggleChatDetails();
   });
   $("selfProfileCard").addEventListener("click", async () => {
     try {
@@ -997,13 +960,7 @@
 
   async function deleteMessageById(rawId, bubble) {
     const messageId = Number(rawId);
-    const currentUser = String(state.username || "").trim().toLowerCase();
-    const owner = String(bubble?.dataset?.owner || "").trim().toLowerCase();
     if (!Number.isInteger(messageId) || bubble.dataset.deleting === "1") return;
-    if (!currentUser || owner !== currentUser || bubble.dataset.mine !== "1") {
-      showToast("You can only delete your own messages.");
-      return;
-    }
     bubble.dataset.deleting = "1";
     bubble.classList.add("is-deleting");
     try {
@@ -1069,7 +1026,7 @@
   messagesEl.addEventListener("touchstart", event => {
     cancelPress();
     if (event.touches.length !== 1) return;
-    const bubble = event.target.closest('.message[data-message-id][data-mine="1"]');
+    const bubble = event.target.closest(".message.outgoing[data-message-id]");
     if (!bubble) return;
     pressBubble = bubble;
     pressX = event.touches[0].clientX;
@@ -1135,7 +1092,7 @@
     clearTimeout(state.searchTimer);
     const query = searchInput.value.trim();
     if (!query) {
-      $("searchResults").innerHTML = `<div class="placeholder-state"><div class="placeholder-icon">⌕</div><strong>Who are you looking for?</strong><span>Search results will show up here.</span></div>`;
+      $("searchResults").innerHTML = `<div class="placeholder-state"><strong>Find people</strong><span>Type a username to search.</span></div>`;
       return;
     }
     state.searchTimer = setTimeout(() => searchUsers(query), 300);
@@ -1206,7 +1163,7 @@
   function renderFriends() {
     const list = $("friendsList"); list.innerHTML = "";
     if (!state.friends.length) {
-      list.innerHTML = `<div class="empty-side">No friends yet. Search for someone to get started.</div>`;
+      list.innerHTML = `<div class="empty-side">No friends yet. Tap the + button to find people.</div>`;
       return;
     }
     state.friends.forEach(username => {
@@ -1297,14 +1254,14 @@
 
   // Re-draw sender avatars in the open group when someone's picture changes.
   function refreshSenderAvatars(onlyKey) {
-    document.querySelectorAll("#messages .message-sender").forEach(old => {
+    document.querySelectorAll("#messages .message-avatar").forEach(old => {
       const key = old.dataset.user;
       if (onlyKey && key !== onlyKey) return;
       const profile = getFriendProfile(key)?.profile;
       const wanted = profileSource(profile);
       const current = old.querySelector("img")?.src || "";
       if (wanted === current) return;
-      const fresh = createAvatar(old.dataset.name || key, profile, "avatar message-sender");
+      const fresh = createAvatar(old.dataset.name || key, profile, "avatar message-avatar");
       fresh.dataset.user = key;
       fresh.dataset.name = old.dataset.name || key;
       old.replaceWith(fresh);
@@ -1327,12 +1284,6 @@
   function setChatHeaderMode(mode) {
     const group = mode === "group";
     $("chatHeaderTag").textContent = group ? "GROUP" : "DIRECT MESSAGE";
-    const details = $("chatDetailsButton");
-    if (details) {
-      details.textContent = group ? "♟" : "⋯";
-      details.title = group ? "View group members" : "Contact details";
-      details.setAttribute("aria-label", group ? "View group members" : "Contact details");
-    }
     $("chatProfileHint").innerHTML = (group ? "Members" : "View profile") + ' <span aria-hidden="true">›</span>';
     $("chatProfileToggle").title = group ? "View group members" : "View contact profile";
     $("chatProfileToggle").setAttribute("aria-label", group ? "Open group members" : "Open contact profile");
@@ -1457,31 +1408,47 @@
     }, true);
   }
 
-  function showGroupDeleteDialog(groupName) {
+  // In-app confirmation dialog (replaces the browser's window.confirm popup).
+  // Resolves true when the user confirms, false on Cancel / Esc / tapping outside.
+  function confirmDialog({ title, message, confirmText = "Confirm", cancelText = "Cancel", danger = false }) {
     return new Promise(resolve => {
       const overlay = document.createElement("div");
-      overlay.className = "cropper-overlay group-delete-overlay";
-      overlay.innerHTML = `
-        <div class="group-delete-dialog" role="dialog" aria-modal="true" aria-label="Delete group">
-          <div class="group-delete-icon">⌫</div>
-          <div class="group-delete-copy">
-            <div class="eyebrow">DANGER ZONE</div>
-            <h3>Delete “${escapeHtml(groupName)}”?</h3>
-            <p>This will remove the group from your chats. This action cannot be undone.</p>
-          </div>
-          <div class="group-delete-actions">
-            <button type="button" class="secondary-btn group-delete-cancel">Keep group</button>
-            <button type="button" class="group-delete-confirm">Delete group</button>
-          </div>
-        </div>`;
+      overlay.className = "cropper-overlay confirm-overlay";
+      overlay.innerHTML =
+        '<div class="cropper-dialog confirm-dialog" role="alertdialog" aria-modal="true">' +
+          '<h3 class="confirm-title"></h3>' +
+          '<p class="confirm-message"></p>' +
+          '<div class="cropper-actions">' +
+            '<button type="button" class="secondary-btn confirm-cancel"></button>' +
+            '<button type="button" class="primary-btn confirm-ok"></button>' +
+          '</div>' +
+        '</div>';
+      const okButton = overlay.querySelector(".confirm-ok");
+      const cancelButton = overlay.querySelector(".confirm-cancel");
+      overlay.querySelector(".confirm-title").textContent = title || "Are you sure?";
+      overlay.querySelector(".confirm-message").textContent = message || "";
+      okButton.textContent = confirmText;
+      cancelButton.textContent = cancelText;
+      okButton.classList.toggle("is-danger", Boolean(danger));
+      overlay.setAttribute("aria-label", title || "Confirm");
+
+      let settled = false;
+      function finish(result) {
+        if (settled) return;
+        settled = true;
+        document.removeEventListener("keydown", onKey, true);
+        overlay.remove();
+        resolve(result);
+      }
+      function onKey(event) {
+        if (event.key === "Escape") { event.preventDefault(); event.stopPropagation(); finish(false); }
+      }
+      okButton.addEventListener("click", () => finish(true));
+      cancelButton.addEventListener("click", () => finish(false));
+      overlay.addEventListener("pointerdown", event => { if (event.target === overlay) finish(false); });
+      document.addEventListener("keydown", onKey, true);
       document.body.append(overlay);
-      const close = value => { document.removeEventListener("keydown", onKey); overlay.remove(); resolve(value); };
-      const onKey = event => { if (event.key === "Escape") close(false); };
-      overlay.querySelector(".group-delete-cancel").onclick = () => close(false);
-      overlay.querySelector(".group-delete-confirm").onclick = () => close(true);
-      overlay.addEventListener("click", event => { if (event.target === overlay) close(false); });
-      document.addEventListener("keydown", onKey);
-      requestAnimationFrame(() => overlay.querySelector(".group-delete-cancel")?.focus());
+      cancelButton.focus();   // the safe choice is focused, so Enter cannot delete by accident
     });
   }
 
@@ -1490,7 +1457,12 @@
       showToast("Only the group owner can delete this group.");
       return;
     }
-    const confirmed = await showGroupDeleteDialog(group.name);
+    const confirmed = await confirmDialog({
+      title: "Delete group?",
+      message: `"${group.name}" will be deleted for all members. This cannot be undone.`,
+      confirmText: "Delete group",
+      danger: true
+    });
     if (!confirmed) return;
 
     try {
@@ -1551,7 +1523,7 @@
     const list = $("groupsList");
     list.innerHTML = "";
     if (!state.groups.length) {
-      list.innerHTML = `<div class="empty-side">No groups yet. Tap + to create one.</div>`;
+      list.innerHTML = `<div class="empty-side">No groups yet. Tap the button below to create one.</div>`;
       return;
     }
     state.groups.forEach(group => {
@@ -1854,7 +1826,12 @@
       return;
     }
 
-    const confirmed = window.confirm(`Remove ${username} from this group?`);
+    const confirmed = await confirmDialog({
+      title: "Remove member?",
+      message: `${username} will be removed from "${group.name}".`,
+      confirmText: "Remove",
+      danger: true
+    });
     if (!confirmed) return;
 
     try {
@@ -1882,93 +1859,96 @@
     if (!content) return;
     const group = state.activeGroup;
     $("profilePanelEyebrow").textContent = "GROUP";
-    $("profilePanelTitle").textContent = "Group details";
+    $("profilePanelTitle").textContent = `${group ? group.name : "Members"} · ${state.groupMembers.length}`;
     content.innerHTML = "";
-    if (!group) return;
 
-    const hero = document.createElement("section");
-    hero.className = "group-profile-hero";
-    const avatar = createAvatar(group.name, group.picture, "group-profile-avatar");
-    const title = document.createElement("strong");
-    title.textContent = group.name;
-    const subtitle = document.createElement("small");
-    subtitle.textContent = `${state.groupMembers.length} member${state.groupMembers.length === 1 ? "" : "s"}`;
-    hero.append(avatar, title, subtitle);
-    content.append(hero);
+    if (group) {
+      const editor = document.createElement("section");
+      editor.className = "group-profile-editor";
+      const avatar = createAvatar(group.name, group.picture, "group-profile-avatar");
+      const info = document.createElement("div");
+      info.className = "group-profile-info";
+      const title = document.createElement("strong");
+      title.textContent = "Group picture";
+      const hint = document.createElement("small");
+      hint.textContent = "Choose and crop a new circular picture";
+      info.append(title, hint);
+      const actions = document.createElement("div");
+      actions.className = "group-profile-actions";
+      const fileInput = document.createElement("input");
+      fileInput.type = "file";
+      fileInput.accept = "image/jpeg,image/png,image/webp";
+      fileInput.className = "hidden";
+      fileInput.setAttribute("aria-label", "Choose group picture");
+      const changeButton = document.createElement("button");
+      changeButton.type = "button";
+      changeButton.className = "secondary-btn group-picture-change";
+      changeButton.textContent = "Change";
+      changeButton.addEventListener("click", () => fileInput.click());
+      fileInput.addEventListener("change", () => handleGroupPictureSelection(fileInput));
+      actions.append(changeButton, fileInput);
 
-    const actions = document.createElement("div");
-    actions.className = "group-profile-actions";
-    if (group.isOwner) {
-      const file = document.createElement("input");
-      file.type = "file"; file.accept = "image/jpeg,image/png,image/webp"; file.className = "hidden";
-      const change = document.createElement("button");
-      change.type = "button"; change.className = "secondary-btn group-picture-change"; change.textContent = "Change picture";
-      change.onclick = () => file.click();
-      file.onchange = () => handleGroupPictureSelection(file);
-      actions.append(change, file);
-      if (state.groupMembers.length < 10) {
-        const add = document.createElement("button");
-        add.type = "button"; add.className = "primary-btn group-member-add"; add.innerHTML = '<span>＋</span> Add member';
-        add.onclick = addGroupMember;
-        actions.append(add);
+      // Only the owner gets the add-member (+) control.
+      if (group.isOwner && state.groupMembers.length < 10) {
+        const addButton = document.createElement("button");
+        addButton.type = "button";
+        addButton.className = "secondary-btn group-member-add";
+        addButton.textContent = "+";
+        addButton.title = "Add one member";
+        addButton.setAttribute("aria-label", "Add one member");
+        addButton.addEventListener("click", addGroupMember);
+        actions.append(addButton);
       }
+      editor.append(avatar, info, actions);
+      content.append(editor);
     }
-    if (actions.children.length) content.append(actions);
-
-    const head = document.createElement("div");
-    head.className = "group-members-head";
-    head.innerHTML = `<span class="group-members-title">Members</span><span class="group-member-count">${state.groupMembers.length}/10</span>`;
-    content.append(head);
 
     if (!state.groupMembers.length) {
       const loading = document.createElement("div");
       loading.className = "profile-loading";
-      loading.textContent = "Loading members…";
+      loading.innerHTML = '<span class="profile-spinner"></span><span>Loading members</span>';
       content.append(loading);
-    } else {
-      const list = document.createElement("div");
-      list.className = "group-members";
-      state.groupMembers.forEach(member => {
-        const isMe = member.username.toLowerCase() === String(state.username).toLowerCase();
-        const profile = getFriendProfile(member.username);
-        const status = isMe ? "Online" : (profile?.status || "Offline");
-        const row = document.createElement("div");
-        row.className = "member-item";
-        const memberButton = document.createElement("button");
-        memberButton.type = "button";
-        memberButton.className = "member-main";
-        const memberAvatar = createAvatar(member.username, profile?.profile, "avatar");
-        const details = document.createElement("span"); details.className = "friend-details";
-        const name = document.createElement("strong"); name.textContent = member.username;
-        const small = document.createElement("small"); small.className = "friend-status"; small.textContent = isMe ? "You" : status;
-        small.classList.toggle("is-online", status === "Online"); small.classList.toggle("is-offline", status !== "Online");
-        details.append(name, small); memberButton.append(memberAvatar, details);
-        if (!isMe) memberButton.onclick = () => loadFriendProfile(member.username);
-        row.append(memberButton);
-        if (group.isOwner && !isMe) {
-          const remove = document.createElement("button");
-          remove.type = "button"; remove.className = "member-remove-btn";
-          remove.innerHTML = '<span>×</span><span>Remove</span>';
-          remove.title = `Remove ${member.username}`;
-          remove.onclick = e => { e.stopPropagation(); removeGroupMember(member.username); };
-          row.append(remove);
-        }
-        list.append(row);
-      });
-      content.append(list);
+      return;
     }
+    const list = document.createElement("div");
+    list.className = "group-members";
+    state.groupMembers.forEach(member => {
+      const isMe = member.username.toLowerCase() === String(state.username).toLowerCase();
+      const profile = getFriendProfile(member.username);
+      const status = isMe ? "Online" : (profile?.status || "Offline");
+      const row = document.createElement("div");
+      row.className = "member-item";
+      const avatar = createAvatar(member.username, profile?.profile, "avatar");
+      const details = document.createElement("span");
+      details.className = "friend-details";
+      const name = document.createElement("strong");
+      name.textContent = member.username + (isMe ? " (you)" : "");
+      const small = document.createElement("small");
+      small.className = "friend-status";
+      small.textContent = status;
+      small.classList.toggle("is-online", status === "Online");
+      small.classList.toggle("is-offline", status !== "Online");
+      details.append(name, small);
+      row.append(avatar, details);
 
-    if (group.isOwner) {
-      const danger = document.createElement("div");
-      danger.className = "group-danger-zone";
-      danger.innerHTML = '<div><strong>Delete this group</strong><small>Remove the group for everyone.</small></div>';
-      const deleteButton = document.createElement("button");
-      deleteButton.type = "button"; deleteButton.className = "group-delete-button";
-      deleteButton.innerHTML = '<span>⌫</span> Delete group';
-      deleteButton.onclick = () => deleteGroup(group);
-      danger.append(deleteButton);
-      content.append(danger);
-    }
+      // The owner can remove any other member. The owner themselves are not removable.
+      if (group?.isOwner && !isMe) {
+        const removeButton = document.createElement("button");
+        removeButton.type = "button";
+        removeButton.className = "member-remove-btn";
+        removeButton.textContent = "Remove";
+        removeButton.title = `Remove ${member.username}`;
+        removeButton.setAttribute("aria-label", `Remove ${member.username}`);
+        removeButton.addEventListener("click", (event) => {
+          event.stopPropagation();
+          removeGroupMember(member.username);
+        });
+        row.append(removeButton);
+      }
+
+      list.append(row);
+    });
+    content.append(list);
   }
 
   async function handleGroupPictureSelection(input) {
@@ -1996,8 +1976,8 @@
   async function saveGroupPicture(file, chatId) {
     const group = state.groups.find(item => item.chatId === chatId) || state.activeGroup;
     const button = $("friendProfileContent")?.querySelector(".group-picture-change");
-    if (!group) {
-      showToast("Open a group before changing its picture.");
+    if (!group || !state.groupMembers.length) {
+      showToast("Group members are not loaded yet. Please try again.");
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
@@ -2020,26 +2000,21 @@
         throw new Error(responseMessage(data, `Group picture upload failed (HTTP ${response.status}).`));
       }
 
-      // Prefer the server-returned path when available. Otherwise keep the local
-      // cropped preview so the UI changes immediately.
-      const returnedPicture = typeof data === "string"
-        ? data
-        : (data?.picture ?? data?.Picture ?? data?.profile ?? data?.Profile ?? data?.url ?? "");
-      const localPicture = profileSource(returnedPicture) || URL.createObjectURL(file);
+      // The API returns Ok() without a path, so use the cropped local image immediately.
+      const localPicture = URL.createObjectURL(file);
       applyGroupPicture(chatId, localPicture);
 
-      // Refresh membership before broadcasting so a newly-added member also gets
-      // the picture update. If the hub is temporarily unavailable, the saved API
-      // change still remains valid and LoadGroup will restore it later.
-      await loadGroupMembers(chatId);
-      if (state.groupHub && state.groupHubReady && (await state.groupHubReady) &&
-          state.groupHub.state === signalR.HubConnectionState.Connected) {
-        const members = state.groupMembers.map(member => member.username).filter(Boolean);
-        if (members.length) {
-          await state.groupHub.invoke("ChangeProfile", members, chatId);
-        }
+      if (!state.groupHub || !state.groupHubReady || !(await state.groupHubReady) ||
+          state.groupHub.state !== signalR.HubConnectionState.Connected) {
+        throw new Error("Picture saved, but GroupHub is not connected; other members may not see the update yet.");
       }
-      showToast("Group picture updated.");
+      const members = state.groupMembers.map(member => member.username).filter(Boolean);
+      if (!members.length) {
+        throw new Error("No group member usernames were returned by GetGroupMembers.");
+      }
+      console.info("Invoking GroupHub.ChangeProfile:", { chatId, members });
+      await state.groupHub.invoke("ChangeProfile", members, chatId);
+      showToast("Group picture updated. Other members will see it when ReceiveProfile is delivered.");
     } finally {
       const currentButton = $("friendProfileContent")?.querySelector(".group-picture-change");
       if (currentButton) { currentButton.disabled = false; currentButton.textContent = "Change"; }
@@ -2052,54 +2027,108 @@
     window.clearTimeout(profileCloseTimer);
     state.panelMode = "group";
     panel.classList.remove("hidden");
-    panel.setAttribute("aria-label", `Members of ${state.activeGroup.name}`);
-    // Render immediately so a touch tap never appears to do nothing.
-    renderGroupMembers();
     requestAnimationFrame(() => panel.classList.add("is-open"));
     // Always refresh the members when the group profile is opened. Membership can
     // change while this group is already open, so never rely on the cached list.
+    renderGroupMembers();
     if (state.groupChatId !== null && state.groupChatId === state.activeGroup.chatId) {
       await loadGroupMembers(state.activeGroup.chatId);
     }
   }
 
   // ---- Create group dialog ----
-  const MAX_GROUP_FRIENDS = 9; // creator is the 10th member
+  const MAX_GROUP_FRIENDS = 9;   // the creator is the 10th member (server limit: 10)
   function openCreateGroupDialog() {
-    if (!state.friends.length) { showToast("Add some friends first, then create a group."); return; }
+    if (!state.friends.length) {
+      showToast("Add some friends first, then you can create a group.");
+      return;
+    }
     const overlay = document.createElement("div");
     overlay.className = "cropper-overlay";
-    overlay.innerHTML = `
-      <div class="cropper-dialog group-dialog" role="dialog" aria-modal="true" aria-label="Create a group">
-        <div class="group-create-head"><h3>Create a group</h3><p>Give it a name, then choose the friends you want in it.</p></div>
-        <div class="group-create-body">
-          <div class="group-name-wrap"><span class="group-name-label">Group name</span><input class="group-name-input" type="text" maxlength="40" placeholder="e.g. Weekend Crew" autocomplete="off"></div>
-          <div class="group-selected"></div>
-          <div class="group-friend-search"><span>⌕</span><input class="group-search-input" type="search" placeholder="Search friends..." autocomplete="off"></div>
-          <div class="group-friend-list"></div><div class="group-empty hidden">No matching friends.</div>
-        </div>
-        <div class="group-create-footer"><span class="group-counter">0 / ${MAX_GROUP_FRIENDS} selected</span><div class="cropper-actions"><button type="button" class="secondary-btn group-cancel">Cancel</button><button type="button" class="primary-btn group-create" disabled>Create group</button></div></div>
-      </div>`;
+    overlay.innerHTML =
+      '<div class="cropper-dialog group-dialog" role="dialog" aria-modal="true" aria-label="Create a group">' +
+      '<h3>New group</h3>' +
+      `<p>Pick up to ${MAX_GROUP_FRIENDS} friends. You will be the 10th member.</p>` +
+      '<input class="group-name-input" type="text" maxlength="40" placeholder="Group name" autocomplete="off">' +
+      '<div class="group-friend-list" role="group" aria-label="Friends"></div>' +
+      `<div class="group-counter">0 / ${MAX_GROUP_FRIENDS} selected</div>` +
+      '<div class="cropper-actions"><button type="button" class="secondary-btn group-cancel">Cancel</button>' +
+      '<button type="button" class="primary-btn group-create" disabled>Create</button></div></div>';
     document.body.append(overlay);
-    const nameInput=overlay.querySelector('.group-name-input'), search=overlay.querySelector('.group-search-input'), list=overlay.querySelector('.group-friend-list'), chips=overlay.querySelector('.group-selected'), counter=overlay.querySelector('.group-counter'), create=overlay.querySelector('.group-create'), empty=overlay.querySelector('.group-empty');
-    const selected=new Set(); let busy=false;
-    const friends=[...new Set(state.friends.map(String))];
-    function sync(){
-      counter.textContent=`${selected.size} / ${MAX_GROUP_FRIENDS} selected`;
-      chips.innerHTML='';
-      selected.forEach(username=>{const chip=document.createElement('span');chip.className='selected-chip';chip.innerHTML=`<span>${escapeHtml(username)}</span>`;const x=document.createElement('button');x.type='button';x.textContent='×';x.setAttribute('aria-label',`Remove ${username}`);x.onclick=()=>{selected.delete(username);render(search.value);sync();};chip.append(x);chips.append(chip);});
-      create.disabled=!nameInput.value.trim()||selected.size===0;
+
+    const nameInput = overlay.querySelector(".group-name-input");
+    const list = overlay.querySelector(".group-friend-list");
+    const counter = overlay.querySelector(".group-counter");
+    const createButton = overlay.querySelector(".group-create");
+    const selected = new Set();
+
+    state.friends.forEach(username => {
+      const row = document.createElement("label");
+      row.className = "group-friend-row";
+      const box = document.createElement("input");
+      box.type = "checkbox";
+      box.value = username;
+      const name = document.createElement("span");
+      name.className = "group-friend-name";
+      name.textContent = username;
+      row.append(box, createAvatar(username, getFriendProfile(username)?.profile), name);
+      list.append(row);
+    });
+
+    function sync() {
+      counter.textContent = `${selected.size} / ${MAX_GROUP_FRIENDS} selected`;
+      const full = selected.size >= MAX_GROUP_FRIENDS;
+      list.querySelectorAll("input").forEach(box => {
+        box.disabled = full && !box.checked;
+        box.closest(".group-friend-row").classList.toggle("is-disabled", box.disabled);
+      });
+      createButton.disabled = !nameInput.value.trim() || selected.size === 0;
     }
-    function render(filter=''){
-      list.innerHTML=''; const q=filter.trim().toLowerCase(); const visible=friends.filter(u=>!q||u.toLowerCase().includes(q)); empty.classList.toggle('hidden',visible.length>0);
-      visible.forEach(username=>{const row=document.createElement('button');row.type='button';row.className='group-friend-row'+(selected.has(username)?' is-selected':'');
-        const avatar=createAvatar(username,getFriendProfile(username)?.profile); avatar.classList.add('avatar'); const name=document.createElement('span');name.className='group-friend-name';name.textContent=username; const check=document.createElement('span');check.className='group-friend-check';check.textContent='✓'; row.append(avatar,name,check);
-        row.onclick=()=>{if(selected.has(username)) selected.delete(username); else {if(selected.size>=MAX_GROUP_FRIENDS){showToast(`A group can have up to ${MAX_GROUP_FRIENDS} friends plus you.`);return;} selected.add(username);} render(search.value);sync();}; list.append(row); });
+    list.addEventListener("change", event => {
+      const box = event.target;
+      if (!(box instanceof HTMLInputElement)) return;
+      if (box.checked) selected.add(box.value); else selected.delete(box.value);
+      sync();
+    });
+    nameInput.addEventListener("input", sync);
+
+    function close() {
+      document.removeEventListener("keydown", onKey);
+      overlay.remove();
     }
-    function close(){document.removeEventListener('keydown',onKey);overlay.remove();} function onKey(e){if(e.key==='Escape'&&!busy)close();}
-    nameInput.addEventListener('input',sync); search.addEventListener('input',()=>render(search.value)); overlay.querySelector('.group-cancel').onclick=close; document.addEventListener('keydown',onKey);
-    create.onclick=async()=>{if(busy)return;const groupName=nameInput.value.trim();if(!groupName||!selected.size)return;busy=true;create.disabled=true;create.textContent='Creating…';try{const result=await post(cfg.endpoints.createGroup,{members:[...selected],GroupName:groupName},true);if(!result.ok)throw new Error(responseMessage(result.data,`Could not create the group (HTTP ${result.status}).`));close();await loadGroups();const created=state.groups.find(g=>g.name.trim().toLowerCase()===groupName.toLowerCase());if(created)await openGroup(created);showToast(`Group “${groupName}” created.`);}catch(error){console.error('CreateGroup failed:',error);showToast(error.message||'Could not create the group.');busy=false;create.disabled=false;create.textContent='Create group';}};
-    render(); sync(); requestAnimationFrame(()=>nameInput.focus());
+    function onKey(event) { if (event.key === "Escape") close(); }
+    document.addEventListener("keydown", onKey);
+    overlay.querySelector(".group-cancel").addEventListener("click", close);
+
+    createButton.addEventListener("click", async () => {
+      const groupName = nameInput.value.trim();
+      if (!groupName || !selected.size) return;
+      createButton.disabled = true;
+      createButton.textContent = "Creating...";
+      try {
+        // CreateGroup(string[] members, string GroupName)
+        const result = await post(cfg.endpoints.createGroup, { members: [...selected], GroupName: groupName }, true);
+        if (!result.ok) {
+          throw new Error(responseMessage(result.data, `Could not create the group (HTTP ${result.status}).`));
+        }
+        close();
+        // The current backend broadcasts ReceiveCreateGroup only to `members`.
+        // The creator may not be included in that array, so refresh the creator
+        // locally by calling the same LoadGroup API once after CreateGroup succeeds.
+        try {
+          await loadGroups();
+        } catch (loadError) {
+          console.error("CreateGroup -> LoadGroup failed for creator:", loadError);
+        }
+        showToast(`Group “${groupName}” created.`);
+      } catch (error) {
+        console.error("CreateGroup failed:", error);
+        showToast(error.message || "Could not create the group.");
+        createButton.textContent = "Create";
+        sync();
+      }
+    });
+    nameInput.focus();
   }
   $("newGroupButton").addEventListener("click", openCreateGroupDialog);
 
@@ -2129,6 +2158,12 @@
     setChatHeaderMode("friend");
     renderGroups();
     $("chatName").textContent = target;
+    { // show the friend's presence right away (state.activeFriend is only set after the hub is ready)
+      const presence = getFriendStatus(target), chatStatus = $("chatStatus");
+      chatStatus.textContent = presence;
+      chatStatus.classList.toggle("is-online", presence === "Online");
+      chatStatus.classList.toggle("is-offline", presence !== "Online");
+    }
     const oldAvatar = $("chatAvatar");
     const newAvatar = createAvatar(target, getFriendProfile(target)?.profile, "avatar");
     newAvatar.id = "chatAvatar";
@@ -2295,9 +2330,6 @@
   $("settingsNav").addEventListener("click", () => {
     $("contentGrid").classList.add("hidden");
     $("settingsView").classList.remove("hidden");
-    mainView.classList.add("settings-open");
-    mainView.classList.remove("chat-open");
-    closeFriendProfileNow();
     $("descriptionInput").value = String(readUserField(state.selfProfile, "description", "Description") || "");
     $("profileFile").value = "";
     state.selectedProfileFile = null;
@@ -2317,7 +2349,6 @@
   $("backToChats").addEventListener("click", () => {
     $("settingsView").classList.add("hidden");
     $("contentGrid").classList.remove("hidden");
-    mainView.classList.remove("settings-open");
   });
 
   // ---- Profile photo cropper (circular mask) ----
@@ -2480,7 +2511,6 @@
     preview.append(image);
   }
 
-  $("chooseProfileFile").addEventListener("click", () => $("profileFile").click());
   $("profileFile").addEventListener("change", async event => {
     const input = event.target;
     const file = input.files?.[0] || null;
@@ -2494,7 +2524,6 @@
       const cropped = await openAvatarCropper(file);
       if (!cropped) return; // cancelled: keep whatever was selected before
       state.selectedProfileFile = cropped;
-      $("profileFileName").textContent = cropped.name || "New photo selected";
       if (profilePreviewUrl) URL.revokeObjectURL(profilePreviewUrl);
       profilePreviewUrl = URL.createObjectURL(cropped);
       showProfilePreview(profilePreviewUrl);
@@ -2550,7 +2579,6 @@
       await state.profileHub.invoke("SaveChanges");
       state.selectedProfileFile = null;
       $("profileFile").value = "";
-      $("profileFileName").textContent = "No new photo";
       $("settingsMessage").textContent = "Your profile has been saved.";
       showToast("Profile updated.");
       // Refresh friend snapshots in case the updated account appears in another list.
@@ -2562,7 +2590,7 @@
       showToast("Could not save all profile changes.");
     } finally {
       saveButton.disabled = false;
-      saveButton.innerHTML = 'Save changes <span>→</span>';
+      saveButton.textContent = "Save changes";
     }
   });
 
@@ -2581,38 +2609,17 @@
     if (message.Id !== null &&
         messages.querySelector(`[data-message-id="${CSS.escape(String(message.Id))}"]`)) return;
 
-    // Never trust the caller's visual type for ownership. The sender is the
-    // source of truth so an incoming message can never accidentally become
-    // deletable just because it was rendered as "outgoing".
-    const currentUser = String(state.username || "").trim().toLowerCase();
-    const sender = String(message.Sender || "").trim().toLowerCase();
-    const isMine = Boolean(currentUser && sender && sender === currentUser);
-    const visualType = isMine ? "outgoing" : "incoming";
-
-    const row = document.createElement("div");
-    row.className = `message-row ${isMine ? "mine" : "theirs"}`;
-
     const bubble = document.createElement("div");
-    bubble.className = `message ${visualType}`;
-    bubble.dataset.owner = sender;
-    bubble.dataset.mine = isMine ? "1" : "0";
+    bubble.className = `message ${type}`;
     if (message.Id !== null) bubble.dataset.messageId = String(message.Id);
-
-    // In group chats, show the other user's avatar/name on the left.
-    if (state.activeGroup && message.Sender) {
-      if (!isMine) {
-        const profile = getFriendProfile(message.Sender)?.profile;
-        const avatar = createAvatar(message.Sender, profile, "avatar message-sender");
-        avatar.dataset.user = sender;
-        avatar.dataset.name = message.Sender;
-        row.append(avatar);
-      }
-      const senderLabel = document.createElement("div");
-      senderLabel.className = "message-sender-name";
-      senderLabel.textContent = isMine ? "You" : message.Sender;
-      bubble.append(senderLabel);
+    const showSender = Boolean(state.activeGroup) && type === "incoming" && Boolean(message.Sender);
+    if (showSender) {
+      const label = document.createElement("div");
+      label.className = "message-sender";
+      label.textContent = message.Sender;
+      label.style.color = senderColor(message.Sender);
+      bubble.append(label);
     }
-
     if (message.Content) {
       const body = document.createElement("div");
       body.className = "message-content";
@@ -2623,16 +2630,13 @@
       const attachment = renderMessageAttachment(message.File);
       if (attachment) bubble.append(attachment);
     }
-
     const meta = document.createElement("div");
     meta.className = "message-meta";
     const sentAt = new Date(message.SentAt);
     meta.textContent = Number.isNaN(sentAt.getTime()) ? "" :
       sentAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
     bubble.append(meta);
-
-    // Delete control is created ONLY for the authenticated user's own message.
-    if (message.Id !== null && isMine) {
+    if (message.Id !== null && type === "outgoing") { // only your own messages can be deleted
       const deleteButton = document.createElement("button");
       deleteButton.type = "button";
       deleteButton.className = "message-delete-btn";
@@ -2641,12 +2645,22 @@
       deleteButton.innerHTML = TRASH_ICON;
       bubble.append(deleteButton);
     }
-
-    row.append(bubble);
-    messages.append(row);
-
+    if (showSender) {
+      // Other members: their own profile picture on the left, bubble next to it.
+      const row = document.createElement("div");
+      row.className = "message-row";
+      const profile = getFriendProfile(message.Sender)?.profile;
+      const avatar = createAvatar(message.Sender, profile, "avatar message-avatar");
+      avatar.dataset.user = String(message.Sender).toLowerCase();
+      avatar.dataset.name = message.Sender;
+      row.append(avatar, bubble);
+      messages.append(row);
+    } else {
+      messages.append(bubble);
+    }
     if (options.scroll !== false) {
-      if (isMine) pinnedToBottom = true;
+      // Own messages always jump to the bottom; incoming ones only if you are already there.
+      if (type === "outgoing") pinnedToBottom = true;
       followIfPinned();
     }
   }
@@ -2663,214 +2677,46 @@
     }
   }
 
-  function getAttachmentInfo(path) {
-    const clean = String(path || "").split("?")[0].split("#")[0];
-    let name = clean.split(/[\\/]/).pop() || "Attachment";
-    try { name = decodeURIComponent(name); } catch {}
-    const extension = (name.includes(".") ? name.split(".").pop() : "").toLowerCase();
-    const groups = [
-      { exts: ["zip","rar","7z","tar","gz","bz2","xz","tgz","zst","cab","iso"], icon: "📦", type: "Compressed archive" },
-      { exts: ["pdf"], icon: "📕", type: "PDF document" },
-      { exts: ["doc","docx","odt","rtf"], icon: "📝", type: "Text document" },
-      { exts: ["xls","xlsx","csv","ods"], icon: "📊", type: "Spreadsheet" },
-      { exts: ["ppt","pptx","odp"], icon: "📽️", type: "Presentation" },
-      { exts: ["txt","md","log"], icon: "📄", type: "Text file" },
-      { exts: ["mp3","wav","m4a","aac","flac","opus","wma","aiff"], icon: "🎵", type: "Audio file" },
-      { exts: ["mp4","webm","ogg","mov","m4v","avi","mkv","wmv","3gp"], icon: "🎬", type: "Video file" },
-      { exts: ["exe","msi","dmg","apk","app","deb","rpm","dll","so","sys"], icon: "⚙️", type: "Application / system file" },
-      { exts: ["bin","dat","pak","db","sqlite","bak","dump"], icon: "💾", type: "Data / binary file" },
-      { exts: ["js","ts","jsx","tsx","html","css","cs","py","java","cpp","c","h","json","xml","yml","yaml","sql","php","go","rs","sh","ps1"], icon: "💻", type: "Source code" },
-      { exts: ["psd","ai","sketch","fig","xd","blend","obj","fbx","stl"], icon: "🎨", type: "Design / 3D file" },
-      { exts: ["ttf","otf","woff","woff2"], icon: "🔤", type: "Font file" },
-      { exts: ["key","pem","crt","cer","p12","pfx"], icon: "🔐", type: "Certificate / key file" },
-      { exts: ["torrent"], icon: "🧲", type: "Torrent file" }
-    ];
-    const group = groups.find(item => item.exts.includes(extension));
-    return {
-      name,
-      extension: extension ? extension.toUpperCase() : "FILE",
-      icon: group?.icon || "📎",
-      type: group?.type || "File attachment"
-    };
-  }
-
-  function renderFileCard(path, urlValue, info = getAttachmentInfo(path)) {
-    const card = document.createElement("div");
-    card.className = "message-file-card";
-    const icon = document.createElement("div");
-    icon.className = "message-file-icon";
-    icon.textContent = info.icon;
-    icon.setAttribute("aria-hidden", "true");
-
-    const details = document.createElement("div");
-    details.className = "message-file-details";
-    const name = document.createElement("strong");
-    name.className = "message-file-name";
-    name.textContent = info.name;
-    name.title = info.name;
-    const type = document.createElement("span");
-    type.className = "message-file-type";
-    type.textContent = `${info.type} · ${info.extension}`;
-    details.append(name, type);
-
-    const download = document.createElement("a");
-    download.className = "message-file-download";
-    download.href = urlValue;
-    download.download = info.name;
-    download.rel = "noopener noreferrer";
-    download.setAttribute("aria-label", `Download ${info.name}`);
-    download.title = "Download file";
-    download.textContent = "↓";
-    card.append(icon, details, download);
-    return card;
-  }
-
   function renderMessageAttachment(path) {
     const urlValue = resolveMessageFile(path);
     if (!urlValue) return null;
-    const info = getAttachmentInfo(path);
     const extension = String(path).split("?")[0].split("#")[0].split(".").pop().toLowerCase();
     const wrapper = document.createElement("div");
     wrapper.className = "message-attachment";
-
-    if (["jpg", "jpeg", "png", "gif", "webp", "bmp", "avif", "svg", "tif", "tiff"].includes(extension)) {
+    if (["jpg", "jpeg", "png", "gif", "webp", "bmp", "avif"].includes(extension)) {
       const image = document.createElement("img");
       image.src = urlValue;
       image.alt = "Image attachment";
-      image.draggable = false;
-      image.loading = "lazy";
       image.addEventListener("load", followIfPinned);
-      image.addEventListener("error", () => {
-        // Some servers send image files as application/octet-stream. Keep the
-        // message tidy and downloadable instead of showing a broken image.
-        wrapper.classList.remove("image-attachment");
-        wrapper.replaceChildren(renderFileCard(path, urlValue, info));
-        followIfPinned();
-      }, { once: true });
-      wrapper.classList.add("image-attachment");
-      wrapper.setAttribute("role", "button");
-      wrapper.setAttribute("tabindex", "0");
-      wrapper.setAttribute("aria-label", "View image");
-      wrapper.addEventListener("click", event => {
-        if (event.target.closest("a")) return;
-        if (event.button !== 0) return;
-        openImageViewer(urlValue, image.alt);
-      });
-      wrapper.addEventListener("keydown", event => {
-        if (event.key === "Enter" || event.key === " ") { event.preventDefault(); openImageViewer(urlValue, image.alt); }
-      });
+      image.addEventListener("error", followIfPinned);
+      image.addEventListener("click", () => window.open(urlValue, "_blank", "noopener"));
       wrapper.append(image);
     } else if (["mp4", "webm", "ogg", "mov", "m4v"].includes(extension)) {
       const video = document.createElement("video");
       video.src = urlValue;
-      video.controls = false;
-      video.playsInline = true;
+      video.controls = true;
       video.preload = "metadata";
-      video.disablePictureInPicture = true;
-      video.setAttribute("aria-label", "Video message");
-      wrapper.classList.add("video-attachment");
-      const controls = document.createElement("div");
-      controls.className = "monter-video-controls";
-      const play = document.createElement("button");
-      play.type = "button"; play.className = "video-play"; play.textContent = "▶"; play.setAttribute("aria-label", "Play video");
-      const seek = document.createElement("input");
-      seek.type = "range"; seek.min = "0"; seek.max = "1000"; seek.value = "0"; seek.className = "video-seek"; seek.setAttribute("aria-label", "Seek video");
-      const clock = document.createElement("span"); clock.className = "video-clock"; clock.textContent = "0:00 / 0:00";
-      const mute = document.createElement("button"); mute.type = "button"; mute.className = "video-mute"; mute.textContent = "♫"; mute.setAttribute("aria-label", "Mute video");
-      const fullscreen = document.createElement("button"); fullscreen.type = "button"; fullscreen.className = "video-fullscreen"; fullscreen.textContent = "⛶"; fullscreen.setAttribute("aria-label", "Enter fullscreen"); fullscreen.title = "Fullscreen";
-      const formatTime = value => { if (!Number.isFinite(value)) return "0:00"; const n = Math.floor(value); return `${Math.floor(n / 60)}:${String(n % 60).padStart(2, "0")}`; };
-      const sync = () => { seek.value = video.duration ? String(Math.round(video.currentTime / video.duration * 1000)) : "0"; clock.textContent = `${formatTime(video.currentTime)} / ${formatTime(video.duration)}`; play.textContent = video.paused ? "▶" : "Ⅱ"; };
-      play.addEventListener("click", () => video.paused ? video.play().catch(() => showToast("Could not play this video.")) : video.pause());
-      video.addEventListener("click", () => video.paused ? video.play().catch(() => {}) : video.pause());
-      video.addEventListener("timeupdate", sync); video.addEventListener("loadedmetadata", () => { sync(); followIfPinned(); });
-      video.addEventListener("play", sync); video.addEventListener("pause", sync);
-      seek.addEventListener("input", () => { if (video.duration) video.currentTime = Number(seek.value) / 1000 * video.duration; });
-      mute.addEventListener("click", () => { video.muted = !video.muted; mute.classList.toggle("is-active", video.muted); mute.textContent = video.muted ? "×" : "♫"; });
-      const updateFullscreenState = () => {
-        const isFullscreen = document.fullscreenElement === wrapper || document.webkitFullscreenElement === wrapper;
-        wrapper.classList.toggle("is-video-fullscreen", isFullscreen);
-        fullscreen.textContent = isFullscreen ? "⤢" : "⛶";
-        fullscreen.setAttribute("aria-label", isFullscreen ? "Exit fullscreen" : "Enter fullscreen");
-        fullscreen.title = isFullscreen ? "Exit fullscreen" : "Fullscreen";
-      };
-      fullscreen.addEventListener("click", async event => {
-        event.stopPropagation();
-        try {
-          if (document.fullscreenElement === wrapper || document.webkitFullscreenElement === wrapper) {
-            if (document.exitFullscreen) await document.exitFullscreen();
-            else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-          } else if (wrapper.requestFullscreen) {
-            await wrapper.requestFullscreen();
-          } else if (wrapper.webkitRequestFullscreen) {
-            wrapper.webkitRequestFullscreen();
-          } else if (video.webkitEnterFullscreen) {
-            video.webkitEnterFullscreen();
-          }
-        } catch { showToast("Fullscreen is not available in this browser."); }
-      });
-      document.addEventListener("fullscreenchange", updateFullscreenState);
-      document.addEventListener("webkitfullscreenchange", updateFullscreenState);
-      video.addEventListener("error", () => {
-        wrapper.classList.remove("video-attachment");
-        wrapper.replaceChildren(renderFileCard(path, urlValue, info));
-      }, { once: true });
-      controls.append(play, seek, clock, mute, fullscreen);
-      wrapper.append(video, controls);
-    } else if (["mp3", "wav", "m4a", "aac", "flac", "opus"].includes(extension)) {
+      video.addEventListener("loadedmetadata", followIfPinned);
+      wrapper.append(video);
+    } else if (["mp3", "wav", "m4a", "aac", "flac"].includes(extension)) {
       const audio = document.createElement("audio");
       audio.src = urlValue;
       audio.controls = true;
       audio.preload = "metadata";
-      audio.addEventListener("error", () => wrapper.replaceChildren(renderFileCard(path, urlValue, info)), { once: true });
       wrapper.append(audio);
     } else {
-      // Archives, executables, binaries, documents and unknown extensions use
-      // one predictable file-card design instead of exposing a naked URL.
-      wrapper.append(renderFileCard(path, urlValue, info));
+      const link = document.createElement("a");
+      link.href = urlValue;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.className = "message-file-link";
+      const name = String(path).split("/").pop() || "Download attachment";
+      link.textContent = `↧  ${name}`;
+      link.download = name;
+      wrapper.append(link);
     }
     return wrapper;
   }
-
-  function openImageViewer(src, alt = "Image") {
-    document.querySelector(".media-viewer")?.remove();
-    const overlay = document.createElement("div");
-    overlay.className = "media-viewer";
-    overlay.setAttribute("role", "dialog");
-    overlay.setAttribute("aria-modal", "true");
-    overlay.setAttribute("aria-label", "Image viewer");
-    const image = document.createElement("img");
-    image.src = src;
-    image.alt = alt;
-    image.draggable = false;
-    const close = document.createElement("button");
-    close.type = "button";
-    close.className = "media-viewer-close";
-    close.setAttribute("aria-label", "Close image viewer");
-    close.textContent = "×";
-    const download = document.createElement("a");
-    download.className = "media-viewer-download";
-    download.href = src;
-    download.target = "_blank";
-    download.rel = "noopener noreferrer";
-    download.textContent = "Open original ↗";
-    const toolbar = document.createElement("div");
-    toolbar.className = "media-viewer-toolbar";
-    toolbar.append(download);
-    overlay.append(close, image, toolbar);
-    const dismiss = () => { overlay.remove(); document.removeEventListener("keydown", onKey); };
-    const onKey = event => { if (event.key === "Escape") dismiss(); };
-    close.addEventListener("click", dismiss);
-    overlay.addEventListener("click", event => { if (event.target === overlay) dismiss(); });
-    image.addEventListener("dragstart", event => event.preventDefault());
-    document.addEventListener("keydown", onKey);
-    document.body.append(overlay);
-    close.focus({ preventScroll: true });
-  }
-
-  // Native drag is disabled for app imagery, while the normal context menu remains available.
-  document.addEventListener("dragstart", event => {
-    if (event.target.closest("img, .message-attachment")) event.preventDefault();
-  }, true);
 
   function initials(value) { return String(value || "?").trim().slice(0, 1).toUpperCase(); }
   function escapeHtml(value) {
