@@ -1,0 +1,6 @@
+@Monter___Rebulid_Edition_Update___HostAddress = http://localhost:5076
+
+GET {{Monter___Rebulid_Edition_Update___HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
+  <meta name="theme-color" content="#07111f">
+  <meta name="color-scheme" content="dark">
+  <title>MONTER</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css?v=monter-ui-361">
+</head>
+<body>
+  <div class="app-shell">
+    <section id="authView" class="auth-layout">
+      <div class="auth-glow auth-glow-one"></div><div class="auth-glow auth-glow-two"></div>
+      <div class="auth-brand">
+        <div class="brand-mark">M<span>.</span></div>
+        <div><div class="brand-name">MONTER</div><div class="brand-caption">Private conversations, beautifully simple.</div></div>
+      </div>
+      <div class="auth-card">
+        <div class="auth-card-top"><span class="auth-pill">SECURE MESSENGER</span><span class="auth-lock">●</span></div>
+        <h1 id="authTitle">Create your account</h1>
+        <p class="muted" id="authSubtitle">Join MONTER and start meaningful conversations.</p>
+        <form id="signupForm" class="auth-form">
+          <label>Username<input name="username" type="text" placeholder="Your username" autocomplete="username" required minlength="2"></label>
+          <label>Email<input name="email" type="email" placeholder="name@example.com" autocomplete="email" required></label>
+          <label>Password<input name="password" type="password" placeholder="At least 8 characters" autocomplete="new-password" required minlength="8"></label>
+          <button class="primary-btn" type="submit">Create account <span>→</span></button>
+        </form>
+        <form id="loginForm" class="auth-form hidden">
+          <label>Email<input name="email" type="email" placeholder="name@example.com" autocomplete="email" required></label>
+          <label>Password<input name="password" type="password" placeholder="Your password" autocomplete="current-password" required></label>
+          <button class="primary-btn" type="submit">Sign in <span>→</span></button>
+        </form>
+        <div id="authMessage" class="notice hidden" role="status"></div>
+        <div class="auth-switch"><span id="switchText">Already have an account?</span> <button id="switchAuth" class="text-btn" type="button">Sign in</button></div>
+      </div>
+      <div class="auth-footer"><span>MONTER</span><i></i><span>PRIVATE BY DESIGN</span></div>
+    </section>
+
+    <section id="mainView" class="main-layout hidden">
+      <aside class="sidebar">
+        <div class="sidebar-head">
+          <div class="sidebar-brand"><div class="brand-mark small">M<span>.</span></div><span>MONTER</span></div>
+          <button id="searchToggle" class="round-icon" type="button" aria-label="Search users" title="Search users">⌕</button>
+        </div>
+
+        <div class="inbox-head">
+          <div><span class="eyebrow">INBOX</span><h1>Messages</h1></div>
+          <button id="newGroupButton" class="new-chat-btn" type="button" title="Create a group" aria-label="Create a group">＋</button>
+        </div>
+
+        <div class="side-switch" role="tablist" aria-label="Friends or groups">
+          <button id="switchFriends" class="side-switch-btn active" type="button" role="tab" aria-selected="true">Chats</button>
+          <button id="switchGroups" class="side-switch-btn" type="button" role="tab" aria-selected="false">Groups</button>
+        </div>
+
+        <div id="friendsSection" class="sidebar-section">
+          <div class="friends-heading"><span>Recent conversations</span><button id="refreshFriends" class="icon-btn" title="Refresh chats" aria-label="Refresh chats">↻</button></div>
+          <div id="friendsList" class="friends-list"><div class="empty-side">Your conversations will appear here.</div></div>
+        </div>
+        <div id="groupsSection" class="sidebar-section hidden">
+          <div class="friends-heading"><span>Your groups</span><button id="refreshGroups" class="icon-btn" type="button" title="Refresh groups">↻</button></div>
+          <div id="groupsList" class="friends-list"><div class="empty-side">Your groups will appear here.</div></div>
+        </div>
+
+        <div class="sidebar-bottom">
+          <div class="connection-state"><span class="status-dot"></span><span>Connected</span></div>
+          <button id="settingsNav" class="settings-nav" type="button" aria-label="Open settings" title="Settings"><span class="settings-icon">⚙</span><span>Settings</span></button>
+          <button id="selfProfileCard" class="self-profile-card" type="button" title="View your profile">
+            <div class="avatar self-avatar" id="selfAvatar">M</div>
+            <span class="profile-meta"><strong id="myUsername">Your account</strong><small id="selfProfileStatus">Online</small></span>
+            <span class="self-profile-arrow">›</span>
+          </button>
+        </div>
+      </aside>
+
+      <main class="workspace">
+        <header class="mobile-topbar">
+          <button id="mobileMenuButton" class="round-icon" type="button" aria-label="Open chats">‹</button>
+          <div class="mobile-brand">MONTER</div>
+          <button id="mobileSearchButton" class="round-icon" type="button" aria-label="Search users">⌕</button>
+        </header>
+
+        <div id="contentGrid" class="content-grid">
+          <section class="chat-panel panel">
+            <div id="chatEmpty" class="chat-empty">
+              <div class="empty-logo"><div class="orbit-core">M<span>.</span></div></div>
+              <div class="eyebrow">MONTER MESSENGER</div>
+              <h3>Pick a conversation<br>and start talking.</h3>
+              <p>Your chats live on the left. Everything else stays out of the way.</p>
+            </div>
+            <div id="chatActive" class="chat-active hidden">
+              <div class="chat-header">
+                <button id="chatBackButton" class="chat-back-btn" type="button" aria-label="Back to chats">‹</button>
+                <button id="chatProfileToggle" class="chat-header-profile" type="button" title="View contact profile" aria-label="Open contact profile">
+                  <div class="avatar" id="chatAvatar">U</div>
+                  <span class="chat-user"><strong id="chatName">Username</strong><small id="chatStatus" class="friend-status is-offline">Offline</small></span>
+                </button>
+                <div class="chat-header-actions"><button class="round-icon" type="button" title="Contact details" aria-label="Contact details" onclick="document.getElementById('chatProfileToggle').click()">⋯</button></div>
+                <div id="chatProfileHint" class="hidden">View profile</div>
+                <div id="chatHeaderTag" class="chat-header-tag">DIRECT</div>
+              </div>
+              <div id="messages" class="messages"><div class="message-system">This is the beginning of your conversation.</div></div>
+              <div id="attachmentPreview" class="attachment-preview hidden" aria-live="polite"><span id="attachmentName"></span><button id="removeAttachment" type="button" aria-label="Remove attachment">×</button></div>
+              <form id="messageForm" class="message-composer">
+                <button id="attachFileButton" class="attach-file-btn" type="button" aria-label="Attach a file" title="Attach a file">＋</button>
+                <input id="messageInput" type="text" enterkeyhint="send" placeholder="Write a message..." autocomplete="off" maxlength="4000">
+                <input id="messageFile" type="file" class="hidden" aria-label="Choose a file">
+                <button class="send-btn" type="submit" aria-label="Send message">↑</button>
+              </form>
+              <div class="composer-hint">Enter to send <span>•</span> Attach files with ＋</div>
+            </div>
+          </section>
+
+          <aside id="friendProfilePanel" class="friend-profile-panel panel hidden" aria-live="polite">
+            <div class="friend-profile-heading"><div><div id="profilePanelEyebrow" class="eyebrow">PROFILE</div><h3 id="profilePanelTitle">Profile</h3></div><button id="closeFriendProfile" class="icon-btn profile-close" type="button" aria-label="Close profile">×</button></div>
+            <div id="friendProfileContent" class="friend-profile-content"><div class="profile-loading">Select a friend to view their profile.</div></div>
+          </aside>
+
+          <section id="searchPanel" class="search-panel panel hidden" aria-label="Search users">
+            <div class="search-panel-head">
+              <div><div class="eyebrow">DISCOVER</div><h2>Find someone</h2></div>
+              <button id="closeSearch" class="icon-btn" type="button" aria-label="Close search">×</button>
+            </div>
+            <div class="search-wrap"><span>⌕</span><input id="searchInput" type="search" placeholder="Search username..." autocomplete="off"><kbd>LIVE</kbd></div>
+            <p class="helper-text">Search for a MONTER username and add them to your chats.</p>
+            <div id="searchResults" class="search-results"><div class="placeholder-state"><div class="placeholder-icon">⌕</div><strong>Search your people</strong><span>Results will appear here.</span></div></div>
+          </section>
+        </div>
+
+        <section id="settingsView" class="settings-view hidden">
+          <header class="settings-topbar">
+            <div><div class="eyebrow">YOUR ACCOUNT</div><h2>Settings</h2></div>
+            <button id="backToChats" class="secondary-btn" type="button">← Back to chats</button>
+          </header>
+          <form id="settingsForm" class="settings-card">
+            <div class="settings-section-heading"><div><div class="eyebrow">PROFILE</div><h3>Your public profile</h3></div></div>
+            <div class="profile-editor">
+              <div id="profilePreview" class="profile-preview">M</div>
+              <div class="profile-file-area">
+                <div class="profile-file-title">Profile picture</div>
+                <div class="profile-file-subtitle">Use a clear photo. You can crop and zoom it before saving.</div>
+                <div class="profile-file-actions"><button id="chooseProfileFile" class="secondary-btn" type="button">Choose photo</button><span id="profileFileName">No new photo</span></div>
+                <input id="profileFile" class="hidden" type="file" accept="image/*">
+              </div>
+            </div>
+            <label class="settings-label" for="descriptionInput">Description</label>
+            <textarea id="descriptionInput" rows="4" maxlength="500" placeholder="Tell your friends a little about yourself..."></textarea>
+            <div class="settings-actions"><button id="saveSettings" class="primary-btn" type="submit">Save changes <span>→</span></button><button id="settingsLogout" class="danger-btn" type="button">Log out</button></div>
+            <p id="settingsMessage" class="settings-message" role="status"></p>
+          </form>
+        </section>
+      </main>
+    </section>
+  </div>
+  <div id="toast" class="toast" role="status"></div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
+  <script src="js/config.js?v=monter-ui-361"></script>
+  <script src="js/app.js?v=monter-ui-361"></script>
+</body>
+</html>
