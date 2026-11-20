@@ -15,11 +15,14 @@ namespace Monter___Rebulid_Edition_Update__.Controllers.AAA_API
     {
         private SignUp ASignUp;
         private Login ALogin;
+        private HashingService Hasher;
 
-        public AuthController(SignUp signUp,Login login)
+        public AuthController(SignUp signUp,Login login , HashingService _hash)
         {
             ASignUp = signUp;
             ALogin = login;
+            Hasher = _hash;
+            
         }
 
 
@@ -35,7 +38,7 @@ namespace Monter___Rebulid_Edition_Update__.Controllers.AAA_API
             await ASignUp.CreateAccount(new Models.User
             {
                 username = username,
-                password = password,
+                password = Hasher.HashingPassword(password),
                 email = email,
                 connectionId = string.Empty,
                 description = string.Empty,
@@ -54,7 +57,7 @@ namespace Monter___Rebulid_Edition_Update__.Controllers.AAA_API
             if (await ALogin.IsAccountUnavailable(email))
                 return BadRequest("Your Email/Password is Worng");
 
-            if (await ALogin.IsPasswordFalse(password))
+            if (await ALogin.IsPasswordFalse(email,password))
                 return BadRequest("Your Email/Password is Worng");
 
             return Ok(await ALogin.CreateToken(email));

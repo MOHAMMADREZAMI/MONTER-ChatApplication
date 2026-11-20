@@ -187,3 +187,21 @@ Group panel: owner and non-owner views now have the same fixed sizes (the Remove
 Media (js/ui.js + css/style.css): video attachments use a custom in-app player (play/pause, seek, time, speed,
 mute, full screen) instead of the browser's native controls; clicking an image opens an in-app viewer
 (prev/next, zoom, download, Esc / Back to close). Formats the browser cannot decode show a Download button.
+
+Leave group: non-owners get "Leave group" in the group's right-click / long-press menu
+(POST /api/group/LeaveGroup?chatid=...). Owners keep "Delete group".
+ReceiveRemoveMember (GroupHub) now accepts both ("LoadGroup") and (username, "LoadGroup") and reloads LoadGroup.
+
+
+PWA setup
+---------
+- manifest.json and service-worker.js are served from the wwwroot root.
+- js/pwa.js registers the service worker and displays an install button when
+  the browser exposes the installation prompt.
+- On iOS, use Safari > Share > Add to Home Screen.
+- The site must be served over HTTPS, except localhost during development.
+- The manifest currently references /ico/Monter.svg. Make sure that file exists
+  in wwwroot/ico/. Its MIME type must be image/svg+xml.
+- For the broadest install compatibility, add dedicated 192x192 and 512x512
+  PNG icons and list them in manifest.json as image/png.
+- This initial service worker does not cache pages or private chat data.

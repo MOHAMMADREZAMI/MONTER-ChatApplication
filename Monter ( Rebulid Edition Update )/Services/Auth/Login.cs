@@ -12,10 +12,11 @@ namespace Monter___Rebulid_Edition_Update__.Services.Auth
     public class Login
     {
         private AppDbContext db;
-
-        public Login(AppDbContext Context)
+        private HashingService hasher;
+        public Login(AppDbContext Context , HashingService hash)
         {
             db = Context;
+            hasher = hash;
         }
 
         public async Task<bool> IsAccountUnavailable(string email)
@@ -24,10 +25,13 @@ namespace Monter___Rebulid_Edition_Update__.Services.Auth
             return exists;
         }
 
-        public async Task<bool> IsPasswordFalse(string password)
+        public async Task<bool> IsPasswordFalse(string email , string password)
         {
-            bool exists = !await db.User.AnyAsync(p => p.password == password);
-            return exists;
+            User user = await db.User.FirstOrDefaultAsync(x => x.email == email);
+
+            return !hasher.Verify(password, user.password);
+
+
         }
 
         public async Task<string> CreateToken(string email)

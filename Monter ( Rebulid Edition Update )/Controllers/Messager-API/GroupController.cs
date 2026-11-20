@@ -89,9 +89,7 @@ namespace Monter___Rebulid_Edition_Update__.Controllers.Messager_API
         public async Task<IActionResult> AddMember(int chatid, string target)
         {
             if (!await Group.AddMember(chatid, target, User.FindFirst(ClaimTypes.NameIdentifier).Value))
-            {
                 return BadRequest("you cannot add a Member");
-            }
 
             await hub.Clients.Users(target).SendAsync("ReceiveAddMember", User.FindFirst(ClaimTypes.NameIdentifier).Value, "LoadGroup");
 
@@ -106,12 +104,23 @@ namespace Monter___Rebulid_Edition_Update__.Controllers.Messager_API
                 return BadRequest("you cannot remove yourself");
 
             if (!await Group.RemoveMember(chatid, target, User.FindFirst(ClaimTypes.NameIdentifier).Value))
-            {
                 return BadRequest("you cannot remove a Member");
-            }
 
             await hub.Clients.Users(target).SendAsync("ReceiveRemoveMember", User.FindFirst(ClaimTypes.NameIdentifier).Value, "LoadGroup");
 
+            return Ok();
+        }
+
+
+        [Authorize]
+        [HttpPost("LeaveGroup")]
+        public async Task<IActionResult> LeaveGroup(int chatid)
+        {
+            if (!await Group.LeaveGroup(chatid,User.FindFirst(ClaimTypes.NameIdentifier).Value))
+                return BadRequest("you are owner , so you cant remove yourself");
+
+
+            await hub.Clients.Users(User.FindFirst(ClaimTypes.NameIdentifier).Value).SendAsync("ReceiveRemoveMember", "LoadGroup");
             return Ok();
         }
 

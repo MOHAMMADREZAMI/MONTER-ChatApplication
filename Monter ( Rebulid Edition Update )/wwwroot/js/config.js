@@ -22,7 +22,8 @@ window.MONTER_CONFIG = {
     profileHub: "/profilehub",
     groupHub: "/grouphub",
     changeGroupProfile: "/api/group/ChangeGroupProfile",
-    deleteGroup: "/api/group/DeleteGroup"
+    deleteGroup: "/api/group/DeleteGroup",
+    leaveGroup: "/api/group/LeaveGroup"
   },
   // The server should broadcast incoming messages with this SignalR event name.
   receiveEvent: "ReceiveMessage",

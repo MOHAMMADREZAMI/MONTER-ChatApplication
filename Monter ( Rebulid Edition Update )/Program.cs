@@ -1,5 +1,6 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -21,7 +22,8 @@ builder.Services.AddScoped<Search>();
 builder.Services.AddScoped<Messager>();
 builder.Services.AddScoped<MyProfile>();
 builder.Services.AddScoped<Group>();
-
+builder.Services.AddScoped<HashingService>();
+builder.Services.AddScoped<PasswordHasher<object>>();
 
 // Add services to the container.
 
@@ -134,6 +136,13 @@ builder.Services.AddSignalR(hubOptions =>
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+    db.Database.Migrate();
+}
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -146,7 +155,6 @@ app.MapHub<ChatHub>("/chathub");
 app.MapHub<ProfileHub>("/profilehub");
 app.MapHub<GroupHub>("/grouphub");
 
-app.UseHttpsRedirection();
 
 app.UseDefaultFiles();
 app.UseStaticFiles();

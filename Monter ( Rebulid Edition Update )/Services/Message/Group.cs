@@ -139,5 +139,23 @@ namespace Monter___Rebulid_Edition_Update__.Services.Message
 
             return true;
         }
+
+        public async Task<bool> LeaveGroup(int chatid, string account)
+        {
+            if (await db.chatMember.AnyAsync(x => x.chatid.Equals(chatid) && x.username.Equals(account) && x.IsOwner.Equals(true)))
+                return false;
+
+
+            Chat_Member chat = await db.chatMember.Where(x => x.username == account && x.chatid == chatid).FirstOrDefaultAsync();
+            db.chatMember.Remove(chat);
+
+            await db.SaveChangesAsync();
+
+            return true;
+        }
+
+
     }
+
+
 }

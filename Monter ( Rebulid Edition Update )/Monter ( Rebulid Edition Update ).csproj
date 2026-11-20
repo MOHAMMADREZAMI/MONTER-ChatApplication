@@ -8,6 +8,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="wwwroot\ico\Monter.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Include="wwwroot\ico\Monter.png" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.22" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.6" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="9.0.10" />
@@ -23,6 +31,7 @@
   <ItemGroup>
     <Folder Include="wwwroot\Uploads\File\" />
     <Folder Include="wwwroot\Uploads\GroupProfile\" />
+    <Folder Include="wwwroot\Uploads\Profile\" />
   </ItemGroup>
 
 </Project>

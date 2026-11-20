@@ -30,6 +30,7 @@
       groupHub: "/grouphub",
       changeGroupProfile: "/api/group/ChangeGroupProfile",
       deleteGroup: "/api/group/DeleteGroup",
+      leaveGroup: "/api/group/LeaveGroup",
       ...Object.fromEntries(Object.entries(suppliedConfig.endpoints || {})
         .filter(([key, value]) => typeof value === "string" && value.trim()))
     }
@@ -683,8 +684,10 @@
 
     // Only the member who was removed receives this event. Refresh their group list
     // and close the currently open group if it disappeared from LoadGroup.
-    state.groupHub.on("ReceiveRemoveMember", async (username, message) => {
-      if (message !== "LoadGroup") return;
+    // The server sends either ("LoadGroup") from LeaveGroup or (username, "LoadGroup") from
+    // RemoveMember, so accept the "LoadGroup" marker in any argument position.
+    state.groupHub.on("ReceiveRemoveMember", async (...args) => {
+      if (!args.includes("LoadGroup")) return;
       try {
         const activeChatId = state.activeGroup?.chatId ?? null;
         await loadGroups();
@@ -1338,12 +1341,20 @@
     const menu = document.createElement("div");
     menu.className = "group-action-menu hidden";
     menu.setAttribute("role", "menu");
-    menu.innerHTML = `<button type="button" class="group-delete-action" role="menuitem">Delete group</button>`;
+    menu.innerHTML =
+      `<button type="button" class="group-delete-action" role="menuitem">Delete group</button>` +
+      `<button type="button" class="group-leave-action" role="menuitem">Leave group</button>`;
     menu.querySelector(".group-delete-action").addEventListener("click", async event => {
       event.stopPropagation();
       const group = groupActionTarget;
       hideGroupActionMenu();
       if (group) await deleteGroup(group);
+    });
+    menu.querySelector(".group-leave-action").addEventListener("click", async event => {
+      event.stopPropagation();
+      const group = groupActionTarget;
+      hideGroupActionMenu();
+      if (group) await leaveGroup(group);
     });
     document.body.append(menu);
     groupActionMenu = menu;
@@ -1364,9 +1375,12 @@
   }
 
   function showGroupActionMenu(group, x, y) {
-    if (!group?.isOwner) return;
+    if (!group) return;
     const menu = ensureGroupActionMenu();
     groupActionTarget = group;
+    // Owners can delete the group; everyone else can leave it.
+    menu.querySelector(".group-delete-action").classList.toggle("hidden", !group.isOwner);
+    menu.querySelector(".group-leave-action").classList.toggle("hidden", Boolean(group.isOwner));
     menu.classList.remove("hidden");
     menu.style.left = "0px";
     menu.style.top = "0px";
@@ -1519,6 +1533,43 @@
     }
   }
 
+  // A non-owner leaves a group by themselves (POST /api/group/LeaveGroup?chatid=...).
+  async function leaveGroup(group) {
+    if (!group) return;
+    if (group.isOwner) {
+      showToast("You are the owner, so you can't leave. Delete the group instead.");
+      return;
+    }
+    const confirmed = await confirmDialog({
+      title: "Leave group?",
+      message: `You will no longer receive messages from "${group.name}".`,
+      confirmText: "Leave",
+      danger: true
+    });
+    if (!confirmed) return;
+
+    try {
+      const result = await post(cfg.endpoints.leaveGroup, { chatid: group.chatId }, true);
+      if (!result.ok) {
+        showToast(responseMessage(result.data, `Could not leave the group (HTTP ${result.status}).`));
+        return;
+      }
+      // The server also pushes ReceiveRemoveMember("LoadGroup"), which reloads the list;
+      // update right away so the UI does not depend on that push arriving.
+      const wasActive = state.activeGroup?.chatId === group.chatId;
+      state.groups = state.groups.filter(item => item.chatId !== group.chatId);
+      if (wasActive) {
+        await closeChatInternal();
+      } else {
+        renderGroups();
+      }
+      showToast("You left the group.");
+    } catch (error) {
+      console.error("LeaveGroup failed:", error);
+      showToast(`Could not leave the group: ${error.message}`);
+    }
+  }
+
   function renderGroups() {
     const list = $("groupsList");
     list.innerHTML = "";
@@ -1541,7 +1592,7 @@
       details.append(name, sub);
       button.append(avatar, details);
       button.addEventListener("click", () => openGroup(group));
-      if (group.isOwner) attachGroupDeleteGestures(button, group);
+      attachGroupDeleteGestures(button, group);
       list.append(button);
     });
   }

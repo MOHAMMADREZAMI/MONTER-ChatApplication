@@ -1,0 +1,115 @@
+MONTER chat attachments - required backend change
+================================================
+
+Important: SignalR Hub methods cannot bind a browser File object to IFormFile.
+A JavaScript `File` sent through `connection.invoke()` is JSON-serialized and
+will not become an ASP.NET IFormFile. This UI therefore sends a ChatFileDto
+containing Base64 data. Update the Hub method signature as shown below before
+using attachments. Text-only messages continue to work with a null file DTO.
+
+1) Add this DTO (for example, Models/ChatFileDto.cs):
+
+public sealed class ChatFileDto
+{
+    public string FileName { get; set; } = "";
+    public string ContentType { get; set; } = "application/octet-stream";
+    public string Base64Data { get; set; } = "";
+}
+
+2) Inject IWebHostEnvironment into ChatHub:
+
+private readonly IWebHostEnvironment _environment;
+
+public ChatHub(/* your existing dependencies, */ IWebHostEnvironment environment)
+{
+    // keep assigning your existing dependencies here
+    _environment = environment;
+}
+
+3) Replace the current Hub method with this shape. Keep your existing
+   constructor/dependencies and adapt names if needed:
+
+[Authorize]
+public async Task SendMessage(string content, int chatid, string target,
+                              ChatFileDto? file = null)
+{
+    string relativeFilePath = "";
+
+    if (file != null && !string.IsNullOrWhiteSpace(file.Base64Data))
+    {
+        byte[] bytes;
+        try
+        {
+            bytes = Convert.FromBase64String(file.Base64Data);
+        }
+        catch (FormatException)
+        {
+            throw new HubException("The attachment data is invalid.");
+        }
+
+        const int maxFileSize = 10 * 1024 * 1024;
+        if (bytes.Length > maxFileSize)
+            throw new HubException("Maximum attachment size is 10 MB.");
+
+        string extension = Path.GetExtension(Path.GetFileName(file.FileName))
+            .ToLowerInvariant();
+
+        // Do not allow executable/script formats to be uploaded as chat files.
+        string[] blockedExtensions =
+        {
+            ".exe", ".dll", ".bat", ".cmd", ".com", ".msi", ".ps1",
+            ".sh", ".vbs", ".js", ".hta", ".scr", ".reg"
+        };
+        if (blockedExtensions.Contains(extension))
+            throw new HubException("This file type is not allowed.");
+
+        string webRoot = _environment.WebRootPath
+            ?? Path.Combine(_environment.ContentRootPath, "wwwroot");
+        string uploadDirectory = Path.Combine(webRoot, "Uploads", "File");
+        Directory.CreateDirectory(uploadDirectory);
+
+        // Use a generated name; never trust the client-supplied path/name.
+        string storedName = $"{Guid.NewGuid():N}{extension}";
+        string fullPath = Path.Combine(uploadDirectory, storedName);
+        await System.IO.File.WriteAllBytesAsync(fullPath, bytes);
+        relativeFilePath = $"Uploads/File/{storedName}";
+    }
+
+    string username = Context.User!
+        .FindFirst(ClaimTypes.NameIdentifier)!.Value;
+
+    Models.Message message = new Models.Message()
+    {
+        chatid = chatid,
+        Content = content ?? "",
+        Sender = username,
+        Receiver = target,
+        SentAt = DateTime.UtcNow,
+        File = relativeFilePath
+    };
+
+    await messager.SaveMessage(message);
+    await Clients.Group(chatid + "room")
+        .SendAsync("ReceiveMessage", message);
+}
+
+4) Configure SignalR to accept a message larger than its default limit.
+   In Program.cs, when registering SignalR, use a limit comfortably above
+   the 10 MB file limit because Base64 adds about 33% overhead:
+
+builder.Services.AddSignalR(options =>
+{
+    options.MaximumReceiveMessageSize = 15 * 1024 * 1024;
+});
+
+If AddSignalR is already configured, add the option to that existing call
+instead of registering it twice.
+
+5) The UI sends files up to 10 MB. `Message.File` is expected to contain a
+   relative path like `Uploads/File/<generated-name>.jpg`. LoadMessage must
+   return that File property along with the other Message fields.
+
+The browser renders common image formats inline, videos with native controls,
+audio with native controls, and other file types as download links. Do not
+serve uploaded files with unsafe inline content types; consider serving
+untrusted files through a download endpoint with Content-Disposition: attachment.

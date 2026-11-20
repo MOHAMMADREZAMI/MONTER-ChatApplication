@@ -1,15 +1,20 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
-  <meta name="theme-color" content="#000000">
-  <meta name="color-scheme" content="dark">
-  <title>MONTER</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Vazirmatn:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=ui-messenger-2">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
+    <meta name="theme-color" content="#101010">
+    <meta name="color-scheme" content="dark">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>MONTER</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Vazirmatn:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css?v=ui-messenger-2">
+    <link rel="manifest" href="/manifest.json">
+
 </head>
 <body>
   <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
@@ -79,6 +84,8 @@
             </button>
             <div class="side-title">MONTER</div>
             <div class="side-actions">
+              <button id="installAppButton" class="round-btn hidden" type="button" title="Install MONTER" aria-label="Install MONTER" aria-describedby="installAppHelp"><svg class="ico"><use href="#i-download"/></svg></button>
+              <span id="installAppHelp" class="visually-hidden">Install MONTER as an app</span>
               <button id="searchToggle" class="round-btn" type="button" title="Search people" aria-label="Search people"><svg class="ico"><use href="#i-search"/></svg></button>
               <button id="settingsNav" class="round-btn settings-nav" type="button" title="Settings" aria-label="Open settings"><svg class="ico"><use href="#i-settings"/></svg></button>
             </div>
@@ -193,5 +200,6 @@
   <script src="js/config.js?v=ui-messenger-2"></script>
   <script src="js/app.js?v=ui-messenger-2"></script>
   <script src="js/ui.js?v=ui-messenger-2"></script>
+  <script src="js/pwa.js?v=1"></script>
 </body>
 </html>
