@@ -61,7 +61,7 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = "MonterClient",
 
         IssuerSigningKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes("SD123nsdpppaakdo1kd;1kso2kflapsdk")
+            Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("MONTER_KEY"))
         ),
 
         ClockSkew = TimeSpan.Zero
@@ -73,14 +73,12 @@ builder.Services.AddAuthentication(options =>
         OnMessageReceived = context =>
         {
             var accessToken = context.Request.Query["access_token"];
-
             var path = context.HttpContext.Request.Path;
 
             if (!string.IsNullOrEmpty(accessToken) &&
-                path.StartsWithSegments("/chathub"))
-                path.StartsWithSegments("/profilehub");
-            path.StartsWithSegments("/grouphub");
-                
+                (path.StartsWithSegments("/chathub") ||
+                 path.StartsWithSegments("/profilehub") ||
+                 path.StartsWithSegments("/grouphub")))
             {
                 context.Token = accessToken;
             }

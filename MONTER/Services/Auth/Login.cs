@@ -40,8 +40,10 @@ namespace MONTER.Services.Auth
 
             Claim[] claims = new Claim[] { new Claim(ClaimTypes.NameIdentifier,user.username) };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("SD123nsdpppaakdo1kd;1kso2kflapsdk"));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("MONTER_KEY")));
             var credentials = new SigningCredentials( key, SecurityAlgorithms.HmacSha256 );
+
+            Console.WriteLine(Environment.GetEnvironmentVariable("MONTER_KEY"));
 
             var token = new JwtSecurityToken(
                 issuer: "Monter",
