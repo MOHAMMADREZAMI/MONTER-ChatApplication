@@ -4,7 +4,7 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>Monter___Rebulid_Edition_Update__</RootNamespace>
+    <RootNamespace>MONTER</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
