@@ -3,12 +3,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client;
-using Monter___Rebulid_Edition_Update__.Data;
-using Monter___Rebulid_Edition_Update__.Models;
-using Monter___Rebulid_Edition_Update__.Services.Message;
-using Monter___Rebulid_Edition_Update__.Services.Search;
+using MONTER.Data;
+using MONTER.Models;
+using MONTER.Services.Message;
+using MONTER.Services.Search;
 
-namespace Monter___Rebulid_Edition_Update__.Hubs
+namespace MONTER.Hubs
 {
     public class GroupHub : Hub
     {

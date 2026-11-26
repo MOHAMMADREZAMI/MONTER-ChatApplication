@@ -3,11 +3,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using Monter___Rebulid_Edition_Update__.Hubs;
-using Monter___Rebulid_Edition_Update__.Models;
-using Monter___Rebulid_Edition_Update__.Services.MyProfile;
+using MONTER.Hubs;
+using MONTER.Models;
+using MONTER.Services.MyProfile;
 
-namespace Monter___Rebulid_Edition_Update__.Controllers.Profile
+namespace MONTER.Controllers.Profile
 {
     [Route("api/profile")]
     [ApiController]

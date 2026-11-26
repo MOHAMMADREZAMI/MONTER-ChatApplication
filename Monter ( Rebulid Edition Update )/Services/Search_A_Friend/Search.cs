@@ -1,10 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client;
-using Monter___Rebulid_Edition_Update__.Data;
-using Monter___Rebulid_Edition_Update__.Models;
-using Monter___Rebulid_Edition_Update__.Services.Message;
+using MONTER.Data;
+using MONTER.Models;
+using MONTER.Services.Message;
 
-namespace Monter___Rebulid_Edition_Update__.Services.Search
+namespace MONTER.Services.Search
 {
     public class Search
     {

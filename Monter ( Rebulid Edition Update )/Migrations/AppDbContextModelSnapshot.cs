@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Monter___Rebulid_Edition_Update__.Data;
+using MONTER.Data;
 
 #nullable disable
 
-namespace Monter___Rebulid_Edition_Update__.Migrations
+namespace MONTER.Migrations
 {
     [DbContext(typeof(AppDbContext))]
     partial class AppDbContextModelSnapshot : ModelSnapshot

@@ -1,10 +1,10 @@
 ﻿using System.IO;
 using Microsoft.EntityFrameworkCore;
-using Monter___Rebulid_Edition_Update__.Data;
-using Monter___Rebulid_Edition_Update__.Models;
-using Monter___Rebulid_Edition_Update__.Services.Search;
+using MONTER.Data;
+using MONTER.Models;
+using MONTER.Services.Search;
 
-namespace Monter___Rebulid_Edition_Update__.Services.MyProfile
+namespace MONTER.Services.MyProfile
 {
     public class MyProfile
     {

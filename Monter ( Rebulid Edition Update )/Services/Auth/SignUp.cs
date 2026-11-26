@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Monter___Rebulid_Edition_Update__.Data;
-using Monter___Rebulid_Edition_Update__.Models;
+using MONTER.Data;
+using MONTER.Models;
 
-namespace Monter___Rebulid_Edition_Update__.Services.Auth
+namespace MONTER.Services.Auth
 {
     public class SignUp
     {

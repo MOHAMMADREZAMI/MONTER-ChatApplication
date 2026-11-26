@@ -4,11 +4,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Hybrid;
-using Monter___Rebulid_Edition_Update__.Hubs;
-using Monter___Rebulid_Edition_Update__.Models;
-using Monter___Rebulid_Edition_Update__.Services.Message;
+using MONTER.Hubs;
+using MONTER.Models;
+using MONTER.Services.Message;
 
-namespace Monter___Rebulid_Edition_Update__.Controllers.Messager_API
+namespace MONTER.Controllers.Messager_API
 {
     [Route("api/group")]
     [ApiController]

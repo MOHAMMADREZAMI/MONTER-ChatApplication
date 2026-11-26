@@ -1,4 +1,4 @@
-﻿namespace Monter___Rebulid_Edition_Update__.Models
+﻿namespace MONTER.Models
 {
     public class GroupObject
     {

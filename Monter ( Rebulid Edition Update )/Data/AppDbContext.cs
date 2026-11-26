@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using Monter___Rebulid_Edition_Update__.Migrations;
-using Monter___Rebulid_Edition_Update__.Models;
+using MONTER.Migrations;
+using MONTER.Models;
 
-namespace Monter___Rebulid_Edition_Update__.Data
+namespace MONTER.Data
 {
     public class AppDbContext : DbContext
     {

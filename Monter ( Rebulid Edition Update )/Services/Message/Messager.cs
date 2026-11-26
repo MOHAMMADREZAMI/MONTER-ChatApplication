@@ -2,11 +2,11 @@
 using System.Runtime.CompilerServices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualBasic;
-using Monter___Rebulid_Edition_Update__.Data;
-using Monter___Rebulid_Edition_Update__.Models;
+using MONTER.Data;
+using MONTER.Models;
 
     
-namespace Monter___Rebulid_Edition_Update__.Services.Message
+namespace MONTER.Services.Message
 {
     public class Messager
     {

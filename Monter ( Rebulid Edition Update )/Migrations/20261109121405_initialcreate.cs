@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace Monter___Rebulid_Edition_Update__.Migrations
+namespace MONTER.Migrations
 {
     /// <inheritdoc />
     public partial class initialcreate : Migration

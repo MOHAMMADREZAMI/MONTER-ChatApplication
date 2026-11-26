@@ -4,10 +4,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
-using Monter___Rebulid_Edition_Update__.Data;
-using Monter___Rebulid_Edition_Update__.Services.Auth;
+using MONTER.Data;
+using MONTER.Services.Auth;
 
-namespace Monter___Rebulid_Edition_Update__.Controllers.AAA_API
+namespace MONTER.Controllers.AAA_API
 {
     [Route("api/auth")]
     [ApiController]

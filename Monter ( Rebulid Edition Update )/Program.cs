@@ -5,13 +5,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Monter___Rebulid_Edition_Update__.Data;
-using Monter___Rebulid_Edition_Update__.Hubs;
-using Monter___Rebulid_Edition_Update__.Models;
-using Monter___Rebulid_Edition_Update__.Services.Auth;
-using Monter___Rebulid_Edition_Update__.Services.Message;
-using Monter___Rebulid_Edition_Update__.Services.MyProfile;
-using Monter___Rebulid_Edition_Update__.Services.Search;
+using MONTER.Data;
+using MONTER.Hubs;
+using MONTER.Models;
+using MONTER.Services.Auth;
+using MONTER.Services.Message;
+using MONTER.Services.MyProfile;
+using MONTER.Services.Search;
 
 var builder = WebApplication.CreateBuilder(args);
 

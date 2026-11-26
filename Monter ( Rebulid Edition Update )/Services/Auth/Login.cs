@@ -4,10 +4,10 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Monter___Rebulid_Edition_Update__.Data;
-using Monter___Rebulid_Edition_Update__.Models;
+using MONTER.Data;
+using MONTER.Models;
 
-namespace Monter___Rebulid_Edition_Update__.Services.Auth
+namespace MONTER.Services.Auth
 {
     public class Login
     {

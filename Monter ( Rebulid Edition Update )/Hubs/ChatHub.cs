@@ -3,12 +3,12 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using Monter___Rebulid_Edition_Update__.Data;
-using Monter___Rebulid_Edition_Update__.Models;
-using Monter___Rebulid_Edition_Update__.Services.Message;
+using MONTER.Data;
+using MONTER.Models;
+using MONTER.Services.Message;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
-namespace Monter___Rebulid_Edition_Update__.Hubs
+namespace MONTER.Hubs
 {
     public class ChatHub : Hub
     {

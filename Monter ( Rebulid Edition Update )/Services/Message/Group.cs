@@ -1,10 +1,10 @@
 ﻿using System.ComponentModel;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client;
-using Monter___Rebulid_Edition_Update__.Data;
-using Monter___Rebulid_Edition_Update__.Models;
+using MONTER.Data;
+using MONTER.Models;
 
-namespace Monter___Rebulid_Edition_Update__.Services.Message
+namespace MONTER.Services.Message
 {
     public class Group
     {

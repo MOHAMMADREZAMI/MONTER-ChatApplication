@@ -2,11 +2,11 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using Monter___Rebulid_Edition_Update__.Hubs;
-using Monter___Rebulid_Edition_Update__.Models;
-using Monter___Rebulid_Edition_Update__.Services.Message;
+using MONTER.Hubs;
+using MONTER.Models;
+using MONTER.Services.Message;
 
-namespace Monter___Rebulid_Edition_Update__.Controllers.MessageController
+namespace MONTER.Controllers.MessageController
 {
     [Route("api/message")]
     [ApiController]

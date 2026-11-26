@@ -3,10 +3,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using Monter___Rebulid_Edition_Update__.Hubs;
-using Monter___Rebulid_Edition_Update__.Services.Search;
+using MONTER.Hubs;
+using MONTER.Services.Search;
 
-namespace Monter___Rebulid_Edition_Update__.Controllers.Search_API
+namespace MONTER.Controllers.Search_API
 {
     [Route("api/Search")]
     [ApiController]
